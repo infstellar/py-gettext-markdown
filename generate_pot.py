@@ -1,35 +1,24 @@
-import gettext
-import re
-import os
+from util import *
 
 class GeneratePot():
-    LANG='zh_CN'
-    def __init__(self, folder_path):
+    def __init__(self, folder_path, LANG) -> None:
         self.folder_path = folder_path
-        
-
-    def _write_file(self, file_path):
-        origin_file = open(file_path, 'r').read()
-        text_list = re.split('  \n|\n\n|<br>',origin_file)
-        text_list = [i.replace('\n', '\\n') for i in text_list]
-        text_list = [i.replace('\"', '\\"') for i in text_list]
-        f = open(file_path.replace('.md','.py'), 'w')
-        f.write(f'import gettext\n')
-        f.write(f'l10n = gettext.translation("{self.LANG}", localedir = r"markdown_i18n/locale", languages=["{self.LANG}"])\n')
-        f.write('l10n.install()\n')
-        f.write(f'_ = l10n.gettext\n')
-        f.write(f'f = open(r"{file_path}")\n')
-        for i in text_list:
-            f.write(f'f.write(_("{i}"))\n')
-        f.write(f'f.close()')
-        f.close()
+        self.LANG = LANG
     
     def run(self):
-        for root, dirs, files in os.walk(self.folder_path):
-            for f in files:
-                if f.split('.')[-1] in ['md', 'markdown']:
-                    self._write_file(f"{root}/{f}")
-      
+        command=''
+        verify_path(self.folder_path)
+        for root, dirs, files in os.walk(f"{self.folder_path}\\base"):
+            for d in dirs:
+                print(os.path.join(root,d))
+                command += f"{os.path.join(root,d)}\\*.py "
+        command += f"{self.folder_path}\\base\\*.py "
+        pot_path = f"{self.folder_path}\\markdown_i18n\\locale\\{self.LANG}\\LC_MESSAGES"
+        verify_path(pot_path)
+        command_head = f"python pygettext.py -k t2t -d {self.LANG} -p {pot_path}"
+        print(f'{command_head} {command}')
+        os.system(f'{command_head} {command}')
+
 if __name__ == "__main__":
-    gp = GeneratePot('md_test')
-    gp.run()
+    rf = GeneratePot(r"md_test", "en_US")
+    rf.run()
