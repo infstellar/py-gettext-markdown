@@ -10,9 +10,10 @@ class GeneratePot():
         verify_path(self.folder_path)
         for root, dirs, files in os.walk(f"{self.folder_path}\\base"):
             for d in dirs:
+                if '__pycache__' in d: continue
                 print(os.path.join(root,d))
-                command += f"{os.path.join(root,d)}\\*.py "
-        command += f"{self.folder_path}\\base\\*.py "
+                command += f"{os.path.join(root,d)}\\*.pygettext "
+        command += f"{self.folder_path}\\base\\*.pygettext "
         pot_path = f"{self.folder_path}\\markdown_i18n\\locale\\{self.LANG}\\LC_MESSAGES"
         verify_path(pot_path)
         command_head = f"python pygettext.py -k t2t -d {self.LANG} -p {pot_path}"

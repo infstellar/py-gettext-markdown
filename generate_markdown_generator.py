@@ -12,7 +12,7 @@ class GenerateMarkdownGenerator():
         origin_file = open(file_path, 'r', encoding='utf-8').read()
         text_list = re.split('  \n|\n\n|<br>',origin_file)
         text_list = [i.replace('\n', '\\n').replace('\"', '\\"') for i in text_list]
-        with open(file_path.replace('.md','.py'), 'w', encoding='utf-8') as f:
+        with open(file_path.replace('.md','.pygettext'), 'w', encoding='utf-8') as f:
             f.write(f'import gettext, sys\n')
             f.write(f"sys.argv.pop(0)\n")
             f.write(f"LANG = sys.argv[0]\n")
@@ -28,7 +28,9 @@ class GenerateMarkdownGenerator():
                 f.write(f'f.write("{x}"+str(\'\\n\'))\n')
             def write_newline():
                 f.write(f'f.write("\\n")\n')
-            for i in range(len(text_list)):
+            i=0
+            while 1:
+                if i>=len(text_list):break
                 if "<!-- ignore gettext -->" in text_list[i]:
                     write_origin(text_list[i])
                 elif "----|----" in text_list[i]:
@@ -47,7 +49,13 @@ class GenerateMarkdownGenerator():
                             i+=1
                             if "```" in text_list[i]:
                                 write_origin(text_list[i])
-                                break 
+                                break
+                elif text_list[i] == "":
+                    pass
+                elif text_list[i] == "\n":
+                    write_newline()    
+                elif text_list[i] == "\\n":
+                    write_newline()   
                 else:
                     write_gettext(text_list[i])
                 write_newline()
@@ -58,8 +66,9 @@ class GenerateMarkdownGenerator():
         for root, dirs, files in os.walk(self.folder_path+'\\base'):
             for f in files:
                 if f.split('.')[-1] in ['md', 'markdown']:
+                    print(f"generate pygettext {root}/{f}")
                     self._write_file(f"{root}/{f}")
       
 if __name__ == "__main__":
-    gmg = GenerateMarkdownGenerator(os.path.abspath('md_test'), "zh_CN")
+    gmg = GenerateMarkdownGenerator(os.path.abspath('doc'), "zh_CN")
     gmg.run()
